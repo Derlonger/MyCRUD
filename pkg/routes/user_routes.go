@@ -1,6 +1,9 @@
 package routes
 
-import "github.com/gorilla/mux"
+import (
+	"github.com/gorilla/mux"
+	"modulepath/pkg/controllers"
+)
 
 var RegisterUserRoutes = func(router *mux.Router) {
 	router.HandleFunc("/users", controllers.GetUser).Methods("GET")
