@@ -11,7 +11,7 @@ import (
 )
 
 // GetUser возвращает всех пользователей в формате JSON
-func GetUser(writer http.ResponseWriter, request *http.Request) {
+func GetUser(writer http.ResponseWriter, _ *http.Request) {
 	allUsers := models.GetAllUsers()
 	utils.RespondWithJSON(writer, http.StatusOK, allUsers)
 }
