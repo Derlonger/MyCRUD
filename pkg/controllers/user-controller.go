@@ -1,49 +1,30 @@
 package controllers
 
 import (
-	"encoding/json"
-	"github.com/gorilla/mux"
 	"log"
-	"modulepath/pkg/models"
-	"modulepath/pkg/utils"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"modulepath/pkg/models"
+	"modulepath/pkg/utils"
 )
 
+// GetUser возвращает всех пользователей в формате JSON
 func GetUser(writer http.ResponseWriter, request *http.Request) {
 	allUsers := models.GetAllUsers()
-	res, err := json.Marshal(allUsers)
-	if err != nil {
-		http.Error(writer, "Ошибка при обработке данных пользователя", http.StatusInternalServerError)
-		return
-	}
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	_, err = writer.Write(res)
-	if err != nil {
-		// В случае ошибки при записи ответа клиенту, можно просто вернуться, поскольку уже был отправлен ответ с ошибкой
-		return
-	}
+	utils.RespondWithJSON(writer, http.StatusOK, allUsers)
 }
 
+// AddUser добавляет нового пользователя и возвращает его данные в формате JSON
 func AddUser(writer http.ResponseWriter, request *http.Request) {
 	addUser := &models.User{}
 	utils.ParseBody(request, addUser)
 	user := models.AddUser(addUser)
-	res, err := json.Marshal(user)
-	if err != nil {
-		http.Error(writer, "Ошибка при обработке данных пользователя", http.StatusInternalServerError)
-		return
-	}
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	_, err = writer.Write(res)
-	if err != nil {
-		// В случае ошибки при записи ответа клиенту, можно просто вернуться, поскольку уже был отправлен ответ с ошибкой
-		return
-	}
+	utils.RespondWithJSON(writer, http.StatusOK, user)
 }
 
+// GetUserById возвращает данные пользователя по указанному ID в формате JSON
 func GetUserById(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	userId := vars["userId"]
@@ -52,20 +33,10 @@ func GetUserById(writer http.ResponseWriter, request *http.Request) {
 		log.Println("UserId not integer")
 	}
 	userDetails, _ := models.GetUserById(id)
-	res, err := json.Marshal(userDetails)
-	if err != nil {
-		http.Error(writer, "Ошибка при обработке данных пользователя", http.StatusInternalServerError)
-		return
-	}
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	_, err = writer.Write(res)
-	if err != nil {
-		// В случае ошибки при записи ответа клиенту, можно просто вернуться, поскольку уже был отправлен ответ с ошибкой
-		return
-	}
+	utils.RespondWithJSON(writer, http.StatusOK, userDetails)
 }
 
+// UpdateUser обновляет данные пользователя по указанному ID и возвращает обновленные данные в формате JSON
 func UpdateUser(writer http.ResponseWriter, request *http.Request) {
 	var updateUser = &models.User{}
 	utils.ParseBody(request, updateUser)
@@ -86,20 +57,10 @@ func UpdateUser(writer http.ResponseWriter, request *http.Request) {
 		userDetails.Address = updateUser.Address
 	}
 	db.Save(&userDetails)
-	res, err := json.Marshal(userDetails)
-	if err != nil {
-		http.Error(writer, "Ошибка при обработке данных пользователя", http.StatusInternalServerError)
-		return
-	}
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	_, err = writer.Write(res)
-	if err != nil {
-		// В случае ошибки при записи ответа клиенту, можно просто вернуться, поскольку уже был отправлен ответ с ошибкой
-		return
-	}
+	utils.RespondWithJSON(writer, http.StatusOK, userDetails)
 }
 
+// DeleteUser удаляет пользователя по указанному ID и возвращает результат операции в формате JSON
 func DeleteUser(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	userId := vars["userId"]
@@ -108,16 +69,5 @@ func DeleteUser(writer http.ResponseWriter, request *http.Request) {
 		log.Println("Userid not integer")
 	}
 	user := models.DeleteUserById(id)
-	res, err := json.Marshal(user)
-	if err != nil {
-		http.Error(writer, "Ошибка при обработке данных пользователя", http.StatusInternalServerError)
-		return
-	}
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	_, err = writer.Write(res)
-	if err != nil {
-		// В случае ошибки при записи ответа клиенту, можно просто вернуться, поскольку уже был отправлен ответ с ошибкой
-		return
-	}
+	utils.RespondWithJSON(writer, http.StatusOK, user)
 }
