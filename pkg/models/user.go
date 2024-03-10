@@ -9,7 +9,7 @@ import (
 var db *gorm.DB
 
 type User struct {
-	Id      uint64 `gorm:"primaryKey" json:"id"`
+	ID      uint64 `gorm:"primaryKey" json:"id"`
 	Name    string `json:"name"`
 	Email   string `json:"email"`
 	Address string `json:"address"`
@@ -32,7 +32,10 @@ func AddUser(us *User) *User {
 
 func GetAllUsers() []User {
 	var Users []User
-	db.Find(&Users)
+	result := db.Find(&Users)
+	if result.Error != nil {
+		log.Println("Ошибка при получении списка пользователей:", result.Error)
+	}
 	return Users
 }
 
