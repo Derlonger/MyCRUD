@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+    <title>Список пользователей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        li:hover {
+            background-color: #f0f0f0;
+        }
+        .button-group {
+            margin-top: 10px;
+        }
+        .button {
+            padding: 5px 10px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 3px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Список пользователей</h1>
+    <button class="button" onclick="showAddUserForm()">Добавить пользователя</button>
+    <div id="add-user-form" style="display: none;">
+        <h2>Добавить пользователя</h2>
+        <form id="add-user-form-data">
+            <label for="add-name">Имя:</label><br>
+            <input type="text" id="add-name" name="name"><br>
+            <label for="add-email">Email:</label><br>
+            <input type="email" id="add-email" name="email"><br>
+            <label for="add-address">Адрес:</label><br>
+            <input type="text" id="add-address" name="address"><br><br>
+            <button type="submit" class="button">Добавить</button>
+        </form>
+    </div>
+    <ul>
+        {{range .}}
+        <li id="user-{{.ID}}">
+            <strong>{{.Name}}</strong> <br>
+            <span>Email: {{.Email}}</span>
+            <div class="button-group">
+                <button class="button" onclick="showEditUserForm('{{.ID}}')">Обновить</button>
+                <button class="button" onclick="deleteUser('{{.ID}}')">Удалить</button>
+            </div>
+            <div id="edit-user-form-{{.ID}}" style="display: none;">
+                <h3>Редактировать пользователя</h3>
+                <form id="edit-user-form-data-{{.ID}}">
+                    <label for="edit-name-{{.ID}}">Имя:</label><br>
+                    <input type="text" id="edit-name-{{.ID}}" name="name" value="{{.Name}}"><br>
+                    <label for="edit-email-{{.ID}}">Email:</label><br>
+                    <input type="email" id="edit-email-{{.ID}}" name="email" value="{{.Email}}"><br>
+                    <label for="edit-address-{{.ID}}">Адрес:</label><br>
+                    <input type="text" id="edit-address-{{.ID}}" name="address" value="{{.Address}}"><br><br>
+                    <button type="button" class="button" onclick="updateUser('{{.ID}}')">Сохранить</button>
+                </form>
+            </div>
+        </li>
+        {{end}}
+    </ul>
+</div>
+
+<script>
+    function showAddUserForm() {
+        var addUserForm = document.getElementById("add-user-form");
+        if (addUserForm.style.display === "none") {
+            addUserForm.style.display = "block";
+        } else {
+            addUserForm.style.display = "none";
+        }
+    }
+
+    function showEditUserForm(userId) {
+        var editUserForm = document.getElementById("edit-user-form-" + userId);
+        if (editUserForm.style.display === "none") {
+            editUserForm.style.display = "block";
+        } else {
+            editUserForm.style.display = "none";
+        }
+    }
+
+    var userForm = document.getElementById("add-user-form-data");
+    userForm.addEventListener("submit", function(event) {
+        event.preventDefault(); // Предотвратить отправку формы по умолчанию
+
+        var formData = new FormData(userForm);
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/users");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                location.reload(); // Обновить страницу после успешного добавления пользователя
+            } else {
+                alert("Ошибка при добавлении пользователя: " + xhr.statusText);
+            }
+        };
+        xhr.send(formData);
+    });
+
+    function updateUser(userId) {
+        var editName = document.getElementById("edit-name-" + userId).value;
+        var editEmail = document.getElementById("edit-email-" + userId).value;
+        var editAddress = document.getElementById("edit-address-" + userId).value;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("PUT", "/users/" + userId);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                location.reload(); // Обновить страницу после успешного обновления пользователя
+            } else {
+                alert("Ошибка при обновлении пользователя: " + xhr.statusText);
+            }
+        };
+        xhr.send(JSON.stringify({ name: editName, email: editEmail, address: editAddress }));
+    }
+
+    function deleteUser(userId) {
+        if (confirm("Вы уверены, что хотите удалить пользователя?")) {
+            // Отправляем AJAX запрос на удаление пользователя
+            var xhr = new XMLHttpRequest();
+            xhr.open("DELETE", "/users/" + userId);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // Обновляем страницу после успешного удаления
+                    location.reload();
+                } else {
+                    alert("Ошибка при удалении пользователя: " + xhr.statusText);
+                }
+            };
+            xhr.send();
+        }
+    }
+</script>
+</body>
+</html>
