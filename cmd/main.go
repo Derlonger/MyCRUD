@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"modulepath/pkg/routes"
+	"modulepath/internal/routes"
 )
 
 func main() {

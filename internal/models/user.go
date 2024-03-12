@@ -3,7 +3,7 @@ package models
 import (
 	"gorm.io/gorm"
 	"log"
-	"modulepath/pkg/config"
+	"modulepath/internal/config"
 )
 
 var db *gorm.DB

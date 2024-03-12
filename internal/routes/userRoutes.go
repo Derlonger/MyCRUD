@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
-	"modulepath/pkg/controllers"
+	"modulepath/internal/controllers"
 )
 
 var RegisterUserRoutes = func(router *mux.Router) {

@@ -8,8 +8,8 @@ import (
 	"text/template"
 
 	"github.com/gorilla/mux"
-	"modulepath/pkg/models"
-	"modulepath/pkg/utils"
+	"modulepath/internal/models"
+	"modulepath/internal/utils"
 )
 
 // GetUser возвращает список всех пользователей
