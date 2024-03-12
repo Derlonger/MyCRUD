@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,18 +10,18 @@ import (
 
 	"github.com/gorilla/mux"
 	"modulepath/internal/models"
-	"modulepath/internal/utils"
+	"modulepath/internal/postgres"
 )
 
 // GetUser возвращает список всех пользователей
 func GetUser(writer http.ResponseWriter, request *http.Request) {
-	allUsers := models.GetAllUsers()
+	allUsers := postgres.GetAllUsers()
 	log.Printf("Получены следующие пользователи: %+v\n", allUsers) // Добавлено логирование
 	// Проверяем заголовок Accept на предмет запроса JSON
 	if request.Header.Get("Accept") == "application/json" {
 		// Если запрос на JSON, возвращаем JSON ответ
 		log.Println("Запрошен список всех пользователей (JSON).")
-		utils.RespondWithJSON(writer, http.StatusOK, allUsers)
+		RespondWithJSON(writer, http.StatusOK, allUsers)
 		return
 	}
 
@@ -56,7 +57,7 @@ func AddUser(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Добавляем пользователя в базу данных
-	user := models.AddUser(newUser)
+	user := postgres.AddUser(newUser)
 
 	// Отправляем ответ клиенту
 	res, err := json.Marshal(user)
@@ -83,22 +84,22 @@ func GetUserById(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Println("UserId not integer")
 	}
-	userDetails, _ := models.GetUserById(id)
+	userDetails, _ := postgres.GetUserById(id)
 	log.Printf("Запрошены данные пользователя с ID %d\n", id)
-	utils.RespondWithJSON(writer, http.StatusOK, userDetails)
+	RespondWithJSON(writer, http.StatusOK, userDetails)
 }
 
 // UpdateUser обновляет данные пользователя по указанному ID и возвращает обновленные данные в формате JSON
 func UpdateUser(writer http.ResponseWriter, request *http.Request) {
 	var updateUser = &models.User{}
-	utils.ParseBody(request, updateUser)
+	ParseBody(request, updateUser)
 	vars := mux.Vars(request)
 	userId := vars["userId"]
 	id, err := strconv.ParseUint(userId, 0, 0)
 	if err != nil {
 		log.Println("Userid not integer")
 	}
-	userDetails, db := models.GetUserById(id)
+	userDetails, db := postgres.GetUserById(id)
 	if updateUser.Name != "" {
 		userDetails.Name = updateUser.Name
 	}
@@ -110,7 +111,7 @@ func UpdateUser(writer http.ResponseWriter, request *http.Request) {
 	}
 	db.Save(&userDetails)
 	log.Printf("Обновлены данные пользователя с ID %d\n", id)
-	utils.RespondWithJSON(writer, http.StatusOK, userDetails)
+	RespondWithJSON(writer, http.StatusOK, userDetails)
 }
 
 // DeleteUser удаляет пользователя по указанному ID и возвращает результат операции в формате JSON
@@ -121,7 +122,32 @@ func DeleteUser(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Println("Userid not integer")
 	}
-	user := models.DeleteUserById(id)
+	user := postgres.DeleteUserById(id)
 	log.Printf("Удален пользователь с ID %d\n", id)
-	utils.RespondWithJSON(writer, http.StatusOK, user)
+	RespondWithJSON(writer, http.StatusOK, user)
+}
+
+func ParseBody(r *http.Request, x interface{}) {
+	if body, err := io.ReadAll(r.Body); err == nil {
+		if err := json.Unmarshal([]byte(body), x); err != nil {
+			return
+		}
+	}
+}
+
+// RespondWithJSON записывает данные в формате JSON в тело ответа и отправляет его клиенту
+func RespondWithJSON(w http.ResponseWriter, statusCode int, data interface{}) {
+	response, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, "Ошибка при обработке данных", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	_, err = w.Write(response)
+	if err != nil {
+		// В случае ошибки при записи ответа клиенту, можно просто вернуться, поскольку уже был отправлен ответ с ошибкой
+		return
+	}
 }
