@@ -10,12 +10,12 @@ import (
 
 	"github.com/gorilla/mux"
 	"modulepath/internal/models"
-	"modulepath/internal/postgres"
+	"modulepath/internal/repository"
 )
 
 // GetUser возвращает список всех пользователей
 func GetUser(writer http.ResponseWriter, request *http.Request) {
-	allUsers := postgres.GetAllUsers()
+	allUsers := repository.GetAllUsers()
 	log.Printf("Получены следующие пользователи: %+v\n", allUsers) // Добавлено логирование
 	// Проверяем заголовок Accept на предмет запроса JSON
 	if request.Header.Get("Accept") == "application/json" {
@@ -57,7 +57,7 @@ func AddUser(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Добавляем пользователя в базу данных
-	user := postgres.AddUser(newUser)
+	user := repository.AddUser(newUser)
 
 	// Отправляем ответ клиенту
 	res, err := json.Marshal(user)
@@ -84,7 +84,7 @@ func GetUserById(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Println("UserId not integer")
 	}
-	userDetails, _ := postgres.GetUserById(id)
+	userDetails, _ := repository.GetUserById(id)
 	log.Printf("Запрошены данные пользователя с ID %d\n", id)
 	RespondWithJSON(writer, http.StatusOK, userDetails)
 }
@@ -99,7 +99,7 @@ func UpdateUser(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Println("Userid not integer")
 	}
-	userDetails, db := postgres.GetUserById(id)
+	userDetails, db := repository.GetUserById(id)
 	if updateUser.Name != "" {
 		userDetails.Name = updateUser.Name
 	}
@@ -122,7 +122,7 @@ func DeleteUser(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Println("Userid not integer")
 	}
-	user := postgres.DeleteUserById(id)
+	user := repository.DeleteUserById(id)
 	log.Printf("Удален пользователь с ID %d\n", id)
 	RespondWithJSON(writer, http.StatusOK, user)
 }

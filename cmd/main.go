@@ -6,10 +6,13 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"modulepath/internal/routes"
 )
 
 func main() {
+	logrus.SetFormatter(new(logrus.JSONFormatter))
+
 	route := mux.NewRouter()
 	routes.RegisterUserRoutes(route)
 
